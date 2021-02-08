@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		id="chess-location-monitoring"
+		version="1.0.0">
+
+	<name>CHESS Location Monitoring Plugin</name>
+
+	<description>
+		Used to monitor locations for CHESS apps
+	</description>
+
+	<license>MIT</license>
+
+	<author>CHESS</author>
+
+	<engines>
+		<engine name="cordova-android" version=">=6.3.0" />
+		<engine name="cordova-ios" version=">=5.0.0" />
+	</engines>
+
+	<!-- Depends on the Local Notification plugin -->
+	<dependency id="cordova-plugin-local-notification" commit="master" url="https://github.com/katzer/cordova-plugin-local-notifications.git"></dependency>
+
+	<!-- Cordova Configuration (where the modules will be accessible in JS in the window object) -->
+	<js-module src="www/gps-monitoring.js" name="GPSMonitoring">
+		<clobbers target="CHESS.GPSMonitoring" />
+	</js-module>
+
+	<!-- Android Configuration -->
+	<platform name="android">
+		<config-file target="AndroidManifest.xml" parent="/*">
+			<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+			<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+			<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+			<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+			<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+			<uses-feature android:name="android.hardware.location.gps" />
+
+			<!-- Used to set alarms for syncing and collecting gps -->
+			<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+		</config-file>
+
+		<config-file target="AndroidManifest.xml" parent="/manifest/application">
+			<receiver android:name="edu.wisc.chess.plugins.chesslocationmonitoring.receivers.BootReceiver">
+				<intent-filter>
+					<action android:name="android.intent.action.BOOT_COMPLETED" />
+				</intent-filter>
+			</receiver>
+
+			<receiver android:name="edu.wisc.chess.plugins.chesslocationmonitoring.receivers.LocationUpdatesBroadcastReceiver"
+				android:exported="true">
+				<intent-filter>
+					<action android:name="edu.wisc.chess.plugins.chesslocationmonitoring.locationupdatespendingintent.action.PROCESS_UPDATES" />
+				</intent-filter>
+			</receiver>
+
+			<receiver android:name="edu.wisc.chess.plugins.chesslocationmonitoring.receivers.BackgroundServiceJobReceiver" />
+			<service
+				android:name="edu.wisc.chess.plugins.chesslocationmonitoring.services.MaintenanceService"
+				android:permission="android.permission.BIND_JOB_SERVICE">
+			</service>
+
+			<service android:name="edu.wisc.chess.plugins.chesslocationmonitoring.services.BackgroundService" android:enabled="true" />
+			<service android:name="edu.wisc.chess.plugins.chesslocationmonitoring.services.LocationService" android:enabled="true" android:foregroundServiceType="location" />
+		</config-file>
+
+		<config-file target="res/xml/config.xml" parent="/*">
+			<feature name="GPSMonitoring">
+				<param name="android-package" value="edu.wisc.chess.plugins.chesslocationmonitoring.GPSMonitoringProxy" />
+			</feature>
+		</config-file>
+
+		<!-- Constants -->
+		<source-file src="src/android/Constants.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/" />
+
+		<!-- Proxies -->
+		<source-file src="src/android/GPSMonitoringProxy.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/" />
+
+		<!-- Controller classes -->
+		<source-file src="src/android/controllers/GPSMonitoringController.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/controllers/" />
+
+		<!-- Helper classes -->
+		<source-file src="src/android/helpers/DatabaseHelpers.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/helpers/" />
+
+		<source-file src="src/android/helpers/EventDatabaseTableHelpers.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/helpers/" />
+
+		<source-file src="src/android/helpers/GeofenceManager.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/helpers/" />
+
+		<source-file src="src/android/helpers/GPSDatabaseTableHelpers.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/helpers/" />
+
+		<source-file src="src/android/helpers/Helpers.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/helpers/" />
+
+		<source-file src="src/android/helpers/NotificationHelpers.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/helpers/" />
+
+		<source-file src="src/android/helpers/ServiceStatusDatabaseTableHelpers.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/helpers/" />
+
+		<source-file src="src/android/helpers/SettingsDatabaseTableHelpers.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/helpers/" />
+
+		<!-- Model classes -->
+		<source-file src="src/android/models/CircularGeofence.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/models/" />
+
+		<source-file src="src/android/models/EventDatabaseRowObject.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/models/" />
+
+		<source-file src="src/android/models/Geofence.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/models/" />
+
+		<source-file src="src/android/models/GeofenceInterface.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/models/" />
+
+		<source-file src="src/android/models/GPSDatabaseRowObject.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/models/" />
+
+		<source-file src="src/android/models/GPSPoint.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/models/" />
+
+		<source-file src="src/android/models/PolygonGeofence.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/models/" />
+
+		<source-file src="src/android/models/ServiceStatusDatabaseRowObject.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/models/" />
+
+		<source-file src="src/android/models/SettingsDatabaseRowObject.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/models/" />
+
+		<!-- Receivers -->
+		<source-file src="src/android/receivers/BackgroundServiceJobReceiver.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/receivers/" />
+
+		<source-file src="src/android/receivers/BootReceiver.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/receivers/" />
+
+		<source-file src="src/android/receivers/LocationUpdatesBroadcastReceiver.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/receivers/" />
+
+		<!-- Service classes -->
+		<source-file src="src/android/services/APIService.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/services/" />
+
+		<source-file src="src/android/services/BackgroundService.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/services/" />
+
+		<source-file src="src/android/services/MaintenanceService.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/services/" />
+
+		<source-file src="src/android/services/LocationService.java" target-dir="src/edu/wisc/chess/plugins/chesslocationmonitoring/services/" />
+	</platform>
+
+	<!-- IOS Configuration -->
+	<platform name="ios">
+		<config-file target="config.xml" parent="/*">
+			<feature name="GPSMonitoring">
+				<param name="ios-package" value="GPSMonitoringProxy" />
+			</feature>
+		</config-file>
+
+		<header-file src="src/ios/app-delegate/AppDelegate+CHESSLocationMonitoring.h"  target-dir="./" />
+		<source-file src="src/ios/app-delegate/AppDelegate+CHESSLocationMonitoring.m"  target-dir="./" />
+
+		<!-- Constants -->
+		<header-file src="src/ios/Constants.h" target-dir="./" />
+		<source-file src="src/ios/Constants.m" target-dir="./" />
+
+		<!-- Proxies -->
+		<header-file src="src/ios/GPSMonitoringProxy.h" target-dir="./" />
+		<source-file src="src/ios/GPSMonitoringProxy.m" target-dir="./" />
+
+		<!-- Controllers -->
+		<header-file src="src/ios/controllers/GPSMonitoringController.h" target-dir="controllers/" />
+		<source-file src="src/ios/controllers/GPSMonitoringController.m" target-dir="controllers/" />
+
+		<!-- Helper classes -->
+		<header-file src="src/ios/helpers/AsyncAPITask.h" target-dir="helpers/" />
+		<source-file src="src/ios/helpers/AsyncAPITask.m" target-dir="helpers/" />
+
+		<header-file src="src/ios/helpers/DatabaseHelpers.h" target-dir="helpers/" />
+		<source-file src="src/ios/helpers/DatabaseHelpers.m" target-dir="helpers/" />
+
+		<header-file src="src/ios/helpers/GeofenceManager.h" target-dir="helpers/" />
+		<source-file src="src/ios/helpers/GeofenceManager.m" target-dir="helpers/" />
+
+		<header-file src="src/ios/helpers/NotificationHelpers.h" target-dir="helpers/" />
+		<source-file src="src/ios/helpers/NotificationHelpers.m" target-dir="helpers/" />
+
+		<!-- Model classes -->
+		<header-file src="src/ios/models/CircularGeofence.h" target-dir="models/" />
+		<source-file src="src/ios/models/CircularGeofence.m" target-dir="models/" />
+
+		<header-file src="src/ios/models/Geofence.h" target-dir="models/" />
+		<source-file src="src/ios/models/Geofence.m" target-dir="models/" />
+
+		<header-file src="src/ios/models/LocationObject.h" target-dir="models/" />
+		<source-file src="src/ios/models/LocationObject.m" target-dir="models/" />
+
+		<header-file src="src/ios/models/PolygonGeofence.h" target-dir="models/" />
+		<source-file src="src/ios/models/PolygonGeofence.m" target-dir="models/" />
+	</platform>
+</plugin>

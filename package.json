@@ -1,0 +1,13 @@
+{
+	"name": "chess-location-monitoring",
+	"version": "1.0.0",
+	"description": "Used to monitor high risk locations for CHESS apps",
+	"cordova": {
+		"id": "chess-location-monitoring",
+		"platforms": [
+			"android"
+		]
+	},
+	"author": "CHESS",
+	"license": "MIT"
+}
