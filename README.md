@@ -67,4 +67,4 @@ ionic cordova platform rm android; rm -r plugins/chess-location-monitoring; ioni
 ionic cordova platform rm ios; rm -r plugins/chess-location-monitoring; ionic cordova platform add ios; ionic cordova build ios
 
 #### Swift files
-There are a number of .swift files located in the unused-swift-files that have been kept for documentation purposes.# Location-Monitoring-Cordova-Plugin
+There are a number of .swift files located in the unused-swift-files that have been kept for documentation purposes.
